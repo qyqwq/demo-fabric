@@ -4,12 +4,14 @@
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
     <div class="controls">
       <p>
-        <button id="edit" onclick="Edit()">
+        <button id="edit" @click="edit">
           Toggle editing polygon
         </button>
       </p>
     </div>
-    <canvas id="c" width="500" height="400" style="border: 1px solid #ccc" />
+    <div class="canvas-body">
+      <canvas id="c" width="500" height="400" style="border: 1px solid #ccc;" />
+    </div>
   </div>
 </template>
 <script setup>
@@ -75,23 +77,48 @@ export default {
           y: 20
         }
       ],
-      polygon: null
+      polygon: null,
+      Editfun: null
     }
   },
   mounted () {
-    const canvas = new fabric.Canvas('c')
+    console.log(process.env.BASE_URL + '旋转-1.png')
+    const controlsUtils = fabric.controlsUtils
+    // fabric.Object.prototype.controls.mtr = new fabric.Control({
+    //   x: 0,
+    //   y: -0.5,
+    //   actionHandler: controlsUtils.rotationWithSnapping,
+    //   cursorStyleHandler: () => ('url(' + require('@/assets/旋转-1.png') + '),crosshair'),
+    //   offsetY: -40,
+    //   withConnection: true,
+    //   actionName: 'rotate'
+    // })
+    // 需要使用 cur,ico 格式
+    fabric.Control.prototype.cursorStyle = 'url("' + process.env.BASE_URL + '旋转.ico") 16 16,pointer'
+    const canvas = new fabric.Canvas('c', {
+      // uniformScaling: false, // true.默认拖动时按比例缩放， false.默认自由缩放
+      // uniScaleKey: 'shiftKey' // 按住该键时，切换 uniformScaling 缩放模式
+    })
     // create a polygon object
     const polygon = this.polygon = new fabric.Polygon(this.points, {
-      left: 100,
-      top: 50,
-      fill: '#D81B60',
-      strokeWidth: 4,
-      stroke: 'green',
+      left: 500,
+      top: 100,
+      fill: '#66B1FF',
+      strokeWidth: 1,
+      stroke: '#409EFF',
       scaleX: 4,
       scaleY: 4,
       objectCaching: false,
-      transparentCorners: false,
-      cornerColor: 'blue'
+      // flipY: true,
+      // transparentCorners: false,
+      cornerColor: '#1883F1',
+      cornerSize: 10
+      // angle: 123
+    })
+    canvas.set({
+      // centeredRotation: false,
+      uniformScaling: false, // true.默认拖动时按比例缩放， false.默认自由缩放
+      uniScaleKey: 'shiftKey' // 按住该键时，切换 uniformScaling 缩放模式
     })
     canvas.viewportTransform = [0.7, 0, 0, 0.7, -50, 50]
     canvas.add(polygon)
@@ -192,7 +219,11 @@ export default {
               actionHandler
             ),
             actionName: 'modifyPolygon',
-            pointIndex: index
+            pointIndex: index,
+            cursorStyleHandler: function (eventData, control, fabricObject) {
+              console.log(arguments)
+              return 'move'
+            }
           })
           return acc
         }, {})
@@ -204,14 +235,22 @@ export default {
       poly.hasBorders = !poly.edit
       canvas.requestRenderAll()
     }
+    this.Editfun = Edit
   },
   methods: {
-
+    edit () {
+      this.Editfun()
+    }
   }
 }
 </script>
 <style lang="less" scoped>
 .controls {
   display: inline-block;
+}
+.canvas-body{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
